@@ -1,0 +1,3 @@
+# # Skip configuration for FairSkies module
+#build:
+#  contents:
