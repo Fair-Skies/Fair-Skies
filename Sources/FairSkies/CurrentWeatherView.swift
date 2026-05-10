@@ -32,7 +32,7 @@ public struct CurrentWeatherView: View {
                 .ignoresSafeArea()
 
             ScrollView {
-                VStack(spacing: 24) {
+                LazyVStack(spacing: 24) {
                     headerSection
                     if let report = report {
                         hourlySection(report: report)
@@ -44,8 +44,8 @@ public struct CurrentWeatherView: View {
                     }
                 }
                 .padding(.horizontal, 16)
-                .padding(.top, 12)
-                .padding(.bottom, 32)
+                .padding(.top, 20)
+                .padding(.bottom, 50)
             }
             .refreshable {
                 await store.refresh(location)
@@ -81,7 +81,7 @@ public struct CurrentWeatherView: View {
                     .font(.title3.weight(.medium))
                     .opacity(0.95)
                 HStack(spacing: 14) {
-                    Label(store.formatter.temperatureString(highToday(report)), systemImage: "")
+                    Text(store.formatter.temperatureString(highToday(report)))
                     Text("\u{2191}")
                     Text(store.formatter.temperatureString(lowToday(report)))
                     Text("\u{2193}")
@@ -157,9 +157,32 @@ public struct CurrentWeatherView: View {
     @ViewBuilder
     private func detailsSection(report: WeatherReport) -> some View {
         let metrics = currentMetrics(report: report)
-        LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
-            ForEach(metrics, id: \.title) { metric in
-                MetricCard(metric: metric)
+        // Manual 2-column grid built from VStack-of-HStacks instead of LazyVGrid.
+        //
+        // Why: SkipUI's LazyVGrid is implemented atop Compose's LazyVerticalGrid,
+        // which requires bounded height. When LazyVGrid is nested inside a
+        // ScrollView, LazyVGrid's Render() detects the parent vertical scroll and
+        // bails on first render (contributing a preference so the parent gives up
+        // its scroll). On Android the recovery path leaves the grid with unbounded
+        // height inside a non-scrolling Column, so it lays out zero items and the
+        // section disappears. iOS's LazyVGrid renders inline against the parent
+        // ScrollView and is unaffected.
+        let rowCount = (metrics.count + 1) / 2
+        VStack(spacing: 12) {
+            ForEach(0..<rowCount, id: \.self) { row in
+                HStack(spacing: 12) {
+                    let leftIndex = row * 2
+                    let rightIndex = leftIndex + 1
+                    MetricCard(metric: metrics[leftIndex])
+                        .frame(maxWidth: .infinity)
+                    if rightIndex < metrics.count {
+                        MetricCard(metric: metrics[rightIndex])
+                            .frame(maxWidth: .infinity)
+                    } else {
+                        Color.clear
+                            .frame(maxWidth: .infinity)
+                    }
+                }
             }
         }
     }

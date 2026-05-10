@@ -1,8 +1,12 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {
+
+    },
     "%lld Items" : {
       "comment" : "Header title for a list that contains the number of items",
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -30,8 +34,21 @@
         }
       }
     },
+    "↑" : {
+
+    },
+    "↑%@" : {
+
+    },
+    "↓" : {
+
+    },
+    "↓%@" : {
+
+    },
     "Add" : {
       "comment" : "Button in items list that will cause a new item to be added",
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -58,6 +75,12 @@
           }
         }
       }
+    },
+    "Add a location to begin tracking weather" : {
+
+    },
+    "Add Location" : {
+
     },
     "Appearance" : {
       "comment" : "Settings select label for the interface style of the controls (light, dark, or default)",
@@ -88,8 +111,12 @@
         }
       }
     },
+    "Beautiful weather for every sky." : {
+
+    },
     "Cancel" : {
       "comment" : "Button title indicating that the operation should be cancelled",
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -117,8 +144,15 @@
         }
       }
     },
+    "Color Theme" : {
+
+    },
+    "Couldn't load weather" : {
+
+    },
     "Dark" : {
       "comment" : "Menu item indicating that the appearance should be in dark mode",
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -148,6 +182,7 @@
     },
     "Date" : {
       "comment" : "Item editor form label for the Date field",
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -175,8 +210,15 @@
         }
       }
     },
+    "Done" : {
+
+    },
+    "FairSkies" : {
+
+    },
     "Favorite" : {
       "comment" : "Item editor title label for marking the item as a favorite",
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -204,7 +246,7 @@
         }
       }
     },
-    "Hello [%@](https://github.com/Fair-Skies/Fair-Skies)!" : {
+    "Feels like %@" : {
 
     },
     "Hello [%@](https://skip.dev)!" : {
@@ -239,6 +281,7 @@
     },
     "Home" : {
       "comment" : "Tab bar item title for the Home tab",
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -268,6 +311,7 @@
     },
     "Light" : {
       "comment" : "Menu item indicating that the appearance should be in light mode",
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -295,8 +339,12 @@
         }
       }
     },
+    "Locations" : {
+
+    },
     "Name" : {
       "comment" : "Placeholder title for the Name field in a form",
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -324,8 +372,15 @@
         }
       }
     },
+    "No locations found." : {
+
+    },
+    "No saved locations yet." : {
+
+    },
     "Notes" : {
       "comment" : "Item editor form label for the Notes field",
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -383,8 +438,15 @@
         }
       }
     },
+    "Refresh All Locations" : {
+
+    },
+    "Retry" : {
+
+    },
     "Save" : {
       "comment" : "Button title indicating that the current contents should be saved",
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -411,6 +473,9 @@
           }
         }
       }
+    },
+    "Search city or postal code" : {
+
     },
     "Settings" : {
       "comment" : "Tab bar item title for the Settings tab",
@@ -443,6 +508,7 @@
     },
     "System" : {
       "comment" : "Menu item indicating that the appearance should be in the default system mode",
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -472,6 +538,7 @@
     },
     "Title" : {
       "comment" : "Label for the item editor form indicating the title of the item",
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -498,6 +565,9 @@
           }
         }
       }
+    },
+    "Updated %@" : {
+
     },
     "Version %@ (%@)" : {
       "comment" : "Settings label showing the current version of the app",
@@ -535,8 +605,15 @@
         }
       }
     },
+    "Weather data by Open-Meteo.com" : {
+
+    },
+    "Weather data is provided by Open-Meteo.com under the CC BY 4.0 license. The app is open source and licensed under GPL-2.0-or-later." : {
+
+    },
     "Welcome" : {
       "comment" : "Tab bar item title for the Welcome tab",
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -563,6 +640,9 @@
           }
         }
       }
+    },
+    "Welcome to FairSkies" : {
+
     }
   },
   "version" : "1.0"

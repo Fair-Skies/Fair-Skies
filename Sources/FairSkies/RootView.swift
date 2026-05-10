@@ -45,7 +45,7 @@ public struct RootView: View {
         if store.locations.isEmpty {
             emptyState
         } else {
-            #if os(iOS) || SKIP
+            #if os(iOS) || os(Android)
             TabView(selection: $pageIndex) {
                 ForEach(Array(store.locations.enumerated()), id: \.offset) { entry in
                     CurrentWeatherView(location: entry.element)
