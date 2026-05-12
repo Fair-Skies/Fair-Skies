@@ -57,15 +57,22 @@ public enum ColorTheme: String, Codable, CaseIterable, Hashable, Sendable {
     case rose
     case mono
 
-    public var label: String {
+    public var label: LocalizedStringResource {
         switch self {
-        case .automatic: return "Dynamic"
-        case .ocean: return "Ocean"
-        case .sunset: return "Sunset"
-        case .forest: return "Forest"
-        case .midnight: return "Midnight"
-        case .rose: return "Rose"
-        case .mono: return "Mono"
+        case .automatic:
+            return LocalizedStringResource("Dynamic", bundle: .atURL(Bundle.module.bundleURL), comment: "color theme name: automatically picks gradient based on current weather condition")
+        case .ocean:
+            return LocalizedStringResource("Ocean", bundle: .atURL(Bundle.module.bundleURL), comment: "color theme name: ocean blue gradient")
+        case .sunset:
+            return LocalizedStringResource("Sunset", bundle: .atURL(Bundle.module.bundleURL), comment: "color theme name: sunset orange/pink gradient")
+        case .forest:
+            return LocalizedStringResource("Forest", bundle: .atURL(Bundle.module.bundleURL), comment: "color theme name: forest green gradient")
+        case .midnight:
+            return LocalizedStringResource("Midnight", bundle: .atURL(Bundle.module.bundleURL), comment: "color theme name: midnight dark blue gradient")
+        case .rose:
+            return LocalizedStringResource("Rose", bundle: .atURL(Bundle.module.bundleURL), comment: "color theme name: rose pink gradient")
+        case .mono:
+            return LocalizedStringResource("Mono", bundle: .atURL(Bundle.module.bundleURL), comment: "color theme name: monochrome grey gradient")
         }
     }
 }

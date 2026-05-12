@@ -3,9 +3,16 @@
 
 import SwiftUI
 import FairSkiesModel
+import AppFairUI
 
 /// User-facing settings: temperature unit, wind unit, color theme, animations,
 /// 24-hour clock, and an About / Open-Meteo attribution section.
+///
+/// At the bottom, an empty `AppFairSettings { }` form is included so the App
+/// Fair "Project Home" attribution row is present (and the auto-detected SBOM
+/// "Bill of Materials" row when the bundle ships one) — these rows are
+/// required for App Fair–distributed apps even when the rest of the settings
+/// UI is a fully custom design.
 public struct SettingsView: View {
     @Environment(WeatherStore.self) var store: WeatherStore
     @Binding var showingSettings: Bool
@@ -24,20 +31,40 @@ public struct SettingsView: View {
                     appearanceSection
                     behaviorSection
                     aboutSection
+                    appFairAttribution
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 16)
             }
         }
         .foregroundStyle(.white)
-        .navigationTitle("Settings")
+        // Use `.toolbar` with a `.principal` ToolbarItem instead of
+        // `.navigationTitle` because the embedded `AppFairSettings` at the
+        // bottom of the scroll content sets its own internal navigationTitle
+        // ("FairSkies 1.0.0") that leaks up to the sheet's outer navigation
+        // bar through SwiftUI's nested NavigationStack handling. A principal
+        // toolbar item takes precedence — but only when the bar is in inline
+        // display mode, since the leaked large title would otherwise still
+        // render below the bar.
         #if os(iOS) || SKIP
         .toolbarColorScheme(.dark, for: .navigationBar)
+        .navigationBarTitleDisplayMode(.inline)
         #endif
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Settings",
+                     bundle: .module,
+                     comment: "title of the settings sheet")
+                    .font(.headline)
+                    .foregroundStyle(.white)
+            }
             ToolbarItem(placement: .confirmationAction) {
-                Button("Done") {
+                Button {
                     showingSettings = false
+                } label: {
+                    Text("Done",
+                         bundle: .module,
+                         comment: "toolbar button title that dismisses the settings sheet")
                 }
                 .foregroundStyle(.white)
             }
@@ -64,7 +91,9 @@ public struct SettingsView: View {
     private var appearanceSection: some View {
         SettingsCard(title: "Appearance", icon: "palette") {
             VStack(alignment: .leading, spacing: 12) {
-                Text("Color Theme")
+                Text("Color Theme",
+                     bundle: .module,
+                     comment: "section subheading for the picker that selects the gradient color theme")
                     .font(.subheadline.weight(.medium))
                 LazyVGrid(columns: [GridItem(.flexible(), spacing: 10),
                                     GridItem(.flexible(), spacing: 10),
@@ -95,7 +124,9 @@ public struct SettingsView: View {
                 } label: {
                     HStack(spacing: 8) {
                         AssetIcon("refresh", size: 18)
-                        Text("Refresh All Locations")
+                        Text("Refresh All Locations",
+                             bundle: .module,
+                             comment: "settings button that re-fetches weather for every saved location")
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
@@ -111,17 +142,35 @@ public struct SettingsView: View {
     private var aboutSection: some View {
         SettingsCard(title: "About", icon: "explore") {
             VStack(alignment: .leading, spacing: 8) {
-                Text("FairSkies")
+                Text("FairSkies",
+                     bundle: .module,
+                     comment: "the name of the app — most locales should keep it untranslated")
                     .font(.title3.weight(.semibold))
-                Text("Beautiful weather for every sky.")
+                Text("Beautiful weather for every sky.",
+                     bundle: .module,
+                     comment: "tagline shown in the About section of settings")
                     .font(.subheadline)
                     .opacity(0.85)
                 Divider().background(Color.white.opacity(0.2))
-                Text("Weather data is provided by Open-Meteo.com under the CC BY 4.0 license. The app is open source and licensed under GPL-2.0-or-later.")
+                Text("Weather data is provided by Open-Meteo.com under the CC BY 4.0 license. The app is open source and licensed under GPL-2.0-or-later.",
+                     bundle: .module,
+                     comment: "About section legal text describing licenses for the data and the app")
                     .font(.caption)
                     .opacity(0.85)
             }
         }
+    }
+
+    /// An empty `AppFairSettings(bundle: .module) { }` placed at the bottom of
+    /// the scrolling settings content. The form itself has no custom content;
+    /// it exists only so that AppFairSettings's required "Project Home" row
+    /// (and SBOM "Bill of Materials" row, if present) are reachable from the
+    /// settings sheet as App Fair distribution rules require.
+    @ViewBuilder
+    private var appFairAttribution: some View {
+        AppFairSettings(bundle: .module) {
+        }
+        .frame(minHeight: 280)
     }
 
     // MARK: - Bindings
@@ -148,7 +197,7 @@ public struct SettingsView: View {
 }
 
 struct SettingsCard<Content: View>: View {
-    let title: String
+    let title: LocalizedStringKey
     let icon: String
     @ViewBuilder var content: () -> Content
 
@@ -156,8 +205,9 @@ struct SettingsCard<Content: View>: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 6) {
                 AssetIcon(icon, size: 16)
-                Text(title.uppercased())
+                Text(title, bundle: .module)
                     .font(.caption.weight(.semibold))
+                    .textCase(.uppercase)
                     .opacity(0.85)
             }
             content()
@@ -169,7 +219,7 @@ struct SettingsCard<Content: View>: View {
 }
 
 struct SegmentedRow<T: Hashable>: View {
-    let title: String
+    let title: LocalizedStringKey
     let icon: String
     @Binding var selection: T
     let options: [(T, String)]
@@ -178,7 +228,7 @@ struct SegmentedRow<T: Hashable>: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
                 AssetIcon(icon, size: 16)
-                Text(title)
+                Text(title, bundle: .module)
                     .font(.subheadline.weight(.medium))
             }
             HStack(spacing: 6) {
@@ -187,7 +237,7 @@ struct SegmentedRow<T: Hashable>: View {
                     Button {
                         selection = opt.0
                     } label: {
-                        Text(opt.1)
+                        Text(verbatim: opt.1)
                             .font(.caption.weight(.medium))
                             .padding(.vertical, 8)
                             .frame(maxWidth: .infinity)
@@ -203,14 +253,14 @@ struct SegmentedRow<T: Hashable>: View {
 }
 
 struct ToggleRow: View {
-    let title: String
+    let title: LocalizedStringKey
     let icon: String
     @Binding var isOn: Bool
 
     var body: some View {
         HStack(spacing: 8) {
             AssetIcon(icon, size: 18)
-            Text(title)
+            Text(title, bundle: .module)
                 .font(.subheadline.weight(.medium))
             Spacer()
             Toggle("", isOn: $isOn)

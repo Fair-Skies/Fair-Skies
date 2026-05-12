@@ -48,23 +48,40 @@ public struct WeatherCondition: Hashable, Codable, Sendable {
     }
 
     /// The localized short label for the condition.
-    public var label: String {
+    public var label: LocalizedStringResource {
         switch kind {
-        case .clear: return isDay ? "Clear" : "Clear Night"
-        case .partlyCloudy: return "Partly Cloudy"
-        case .cloudy: return "Mostly Cloudy"
-        case .overcast: return "Overcast"
-        case .fog: return "Fog"
-        case .drizzle: return "Drizzle"
-        case .rain: return "Rain"
-        case .freezingRain: return "Freezing Rain"
-        case .snow: return "Snow"
-        case .snowGrain: return "Snow Grains"
-        case .rainShowers: return "Rain Showers"
-        case .snowShowers: return "Snow Showers"
-        case .thunderstorm: return "Thunderstorm"
-        case .thunderstormHail: return "Thunderstorm with Hail"
-        case .unknown: return "Unknown"
+        case .clear:
+            return isDay
+                ? LocalizedStringResource("Clear", bundle: .atURL(Bundle.module.bundleURL), comment: "weather condition: clear sky during the day")
+                : LocalizedStringResource("Clear Night", bundle: .atURL(Bundle.module.bundleURL), comment: "weather condition: clear sky at night")
+        case .partlyCloudy:
+            return LocalizedStringResource("Partly Cloudy", bundle: .atURL(Bundle.module.bundleURL), comment: "weather condition: partly cloudy")
+        case .cloudy:
+            return LocalizedStringResource("Mostly Cloudy", bundle: .atURL(Bundle.module.bundleURL), comment: "weather condition: mostly cloudy")
+        case .overcast:
+            return LocalizedStringResource("Overcast", bundle: .atURL(Bundle.module.bundleURL), comment: "weather condition: overcast sky")
+        case .fog:
+            return LocalizedStringResource("Fog", bundle: .atURL(Bundle.module.bundleURL), comment: "weather condition: fog")
+        case .drizzle:
+            return LocalizedStringResource("Drizzle", bundle: .atURL(Bundle.module.bundleURL), comment: "weather condition: light drizzle rain")
+        case .rain:
+            return LocalizedStringResource("Rain", bundle: .atURL(Bundle.module.bundleURL), comment: "weather condition: rain")
+        case .freezingRain:
+            return LocalizedStringResource("Freezing Rain", bundle: .atURL(Bundle.module.bundleURL), comment: "weather condition: freezing rain")
+        case .snow:
+            return LocalizedStringResource("Snow", bundle: .atURL(Bundle.module.bundleURL), comment: "weather condition: snow")
+        case .snowGrain:
+            return LocalizedStringResource("Snow Grains", bundle: .atURL(Bundle.module.bundleURL), comment: "weather condition: snow grains (small dry pellets)")
+        case .rainShowers:
+            return LocalizedStringResource("Rain Showers", bundle: .atURL(Bundle.module.bundleURL), comment: "weather condition: rain showers")
+        case .snowShowers:
+            return LocalizedStringResource("Snow Showers", bundle: .atURL(Bundle.module.bundleURL), comment: "weather condition: snow showers")
+        case .thunderstorm:
+            return LocalizedStringResource("Thunderstorm", bundle: .atURL(Bundle.module.bundleURL), comment: "weather condition: thunderstorm")
+        case .thunderstormHail:
+            return LocalizedStringResource("Thunderstorm with Hail", bundle: .atURL(Bundle.module.bundleURL), comment: "weather condition: thunderstorm with hail")
+        case .unknown:
+            return LocalizedStringResource("Unknown", bundle: .atURL(Bundle.module.bundleURL), comment: "weather condition: unknown")
         }
     }
 

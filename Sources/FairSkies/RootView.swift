@@ -15,9 +15,15 @@ public struct RootView: View {
     public init() {}
 
     public var body: some View {
-        ZStack(alignment: .bottom) {
-            content
-            controlBar
+        // GeometryReader at the root captures the window-level safe area
+        // inset before TabView's .ignoresSafeArea() consumes it, so page
+        // content can pad past the status bar while the gradient still
+        // extends to the screen edge.
+        GeometryReader { proxy in
+            ZStack(alignment: .bottom) {
+                content(topSafeAreaInset: proxy.safeAreaInsets.top)
+                controlBar
+            }
         }
         .preferredColorScheme(preferredScheme)
         .environment(store)
@@ -25,15 +31,25 @@ public struct RootView: View {
             NavigationStack {
                 LocationsView(showingLocations: $showingLocations)
                     .environment(store)
-                    .preferredColorScheme(preferredScheme)
             }
+            // Both sheets always render on the midnight gradient regardless of
+            // the user's selected theme, so the navigation title and toolbar
+            // chrome must use dark-scheme colors (white-on-dark) — otherwise
+            // a light system appearance would draw the title in black on the
+            // dark gradient.
+            .preferredColorScheme(.dark)
         }
         .sheet(isPresented: $showingSettings) {
             NavigationStack {
                 SettingsView(showingSettings: $showingSettings)
                     .environment(store)
-                    .preferredColorScheme(preferredScheme)
             }
+            // The sheet always renders on the midnight gradient regardless of
+            // the user's selected theme, so the navigation title and toolbar
+            // chrome must use dark-scheme colors (white-on-dark) — otherwise
+            // a light system appearance would draw the title in black on the
+            // dark gradient.
+            .preferredColorScheme(.dark)
         }
         .task {
             await store.refreshAll()
@@ -41,14 +57,14 @@ public struct RootView: View {
     }
 
     @ViewBuilder
-    private var content: some View {
+    private func content(topSafeAreaInset: CGFloat) -> some View {
         if store.locations.isEmpty {
             emptyState
         } else {
             #if os(iOS) || os(Android)
             TabView(selection: $pageIndex) {
                 ForEach(Array(store.locations.enumerated()), id: \.offset) { entry in
-                    CurrentWeatherView(location: entry.element)
+                    CurrentWeatherView(location: entry.element, topSafeAreaInset: topSafeAreaInset)
                         .tag(entry.offset)
                 }
             }
@@ -58,7 +74,7 @@ public struct RootView: View {
             // On macOS, fall back to a stack with manual paging buttons.
             VStack(spacing: 0) {
                 if pageIndex < store.locations.count {
-                    CurrentWeatherView(location: store.locations[pageIndex])
+                    CurrentWeatherView(location: store.locations[pageIndex], topSafeAreaInset: 0)
                 }
             }
             #endif
@@ -72,19 +88,29 @@ public struct RootView: View {
                 .ignoresSafeArea()
             VStack(spacing: 20) {
                 AssetIcon("explore", size: 84)
-                Text("Welcome to FairSkies")
+                Text("Welcome to FairSkies",
+                     bundle: .module,
+                     comment: "headline on the empty-state shown before any location is saved")
                     .font(.title2.weight(.semibold))
-                Text("Add a location to begin tracking weather")
+                Text("Add a location to begin tracking weather",
+                     bundle: .module,
+                     comment: "subtitle on the empty-state shown before any location is saved")
                     .font(.subheadline)
                     .opacity(0.85)
                 Button {
                     showingLocations = true
                 } label: {
-                    Label("Add Location", systemImage: "plus.circle.fill")
-                        .padding(.horizontal, 22)
-                        .padding(.vertical, 12)
-                        .background(Color.white.opacity(0.18))
-                        .clipShape(Capsule())
+                    Label {
+                        Text("Add Location",
+                             bundle: .module,
+                             comment: "button on the empty-state that opens the locations sheet")
+                    } icon: {
+                        Image(systemName: "plus.circle.fill")
+                    }
+                    .padding(.horizontal, 22)
+                    .padding(.vertical, 12)
+                    .background(Color.white.opacity(0.18))
+                    .clipShape(Capsule())
                 }
                 .buttonStyle(.plain)
             }
@@ -104,6 +130,7 @@ public struct RootView: View {
                     .clipShape(Circle())
             }
             .buttonStyle(.plain)
+            .accessibilityIdentifier("button.locations")
             Spacer()
             pagerDots
             Spacer()
@@ -116,6 +143,7 @@ public struct RootView: View {
                     .clipShape(Circle())
             }
             .buttonStyle(.plain)
+            .accessibilityIdentifier("button.settings")
         }
         .padding(.horizontal, 16)
         .padding(.bottom, 8)

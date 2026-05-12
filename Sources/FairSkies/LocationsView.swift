@@ -30,14 +30,20 @@ public struct LocationsView: View {
             }
         }
         .foregroundStyle(.white)
-        .navigationTitle("Locations")
+        .navigationTitle(Text("Locations",
+                              bundle: .module,
+                              comment: "title of the locations sheet for managing saved cities"))
         #if os(iOS) || SKIP
         .toolbarColorScheme(.dark, for: .navigationBar)
         #endif
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button("Done") {
+                Button {
                     showingLocations = false
+                } label: {
+                    Text("Done",
+                         bundle: .module,
+                         comment: "toolbar button title that dismisses the locations sheet")
                 }
                 .foregroundStyle(.white)
             }
@@ -49,7 +55,12 @@ public struct LocationsView: View {
         VStack(spacing: 0) {
             HStack(spacing: 8) {
                 AssetIcon("search", size: 18)
-                TextField("Search city or postal code", text: $searchText)
+                TextField(text: $searchText,
+                          prompt: Text("Search city or postal code",
+                                       bundle: .module,
+                                       comment: "placeholder text shown in the empty search field on the locations sheet")) {
+                    Text(verbatim: "")
+                }
                     .textFieldStyle(.plain)
                     .foregroundStyle(.white)
                     .submitLabel(.search)
@@ -95,8 +106,11 @@ public struct LocationsView: View {
     private var searchResultsList: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
-                Text("Search Results".uppercased())
+                Text("Search Results",
+                     bundle: .module,
+                     comment: "section header above the list of geocoder search hits on the locations sheet")
                     .font(.caption.weight(.semibold))
+                    .textCase(.uppercase)
                     .opacity(0.85)
                 Spacer()
                 if isSearching {
@@ -106,12 +120,14 @@ public struct LocationsView: View {
                 }
             }
             if let err = searchError {
-                Text(err)
+                Text(verbatim: err)
                     .font(.caption)
                     .foregroundStyle(col("#FFB0B0"))
             }
             if !isSearching && searchResults.isEmpty && !lastSearched.isEmpty && searchError == nil {
-                Text("No locations found.")
+                Text("No locations found.",
+                     bundle: .module,
+                     comment: "shown under the search bar when the search query returned zero results")
                     .font(.caption)
                     .opacity(0.85)
             }
@@ -122,10 +138,10 @@ public struct LocationsView: View {
                     HStack(spacing: 12) {
                         AssetIcon("add", size: 22)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(result.name)
+                            Text(verbatim: result.name)
                                 .font(.body.weight(.medium))
                                 .foregroundStyle(.white)
-                            Text(subtitle(for: result))
+                            Text(verbatim: subtitle(for: result))
                                 .font(.caption)
                                 .opacity(0.85)
                                 .foregroundStyle(.white)
@@ -145,13 +161,18 @@ public struct LocationsView: View {
     private var savedLocationsList: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
-                Text("Saved Locations".uppercased())
+                Text("Saved Locations",
+                     bundle: .module,
+                     comment: "section header above the list of saved/bookmarked cities on the locations sheet")
                     .font(.caption.weight(.semibold))
+                    .textCase(.uppercase)
                     .opacity(0.85)
                 Spacer()
             }
             if store.locations.isEmpty {
-                Text("No saved locations yet.")
+                Text("No saved locations yet.",
+                     bundle: .module,
+                     comment: "shown on the locations sheet when there are no saved cities yet")
                     .font(.caption)
                     .opacity(0.85)
             }
@@ -206,7 +227,9 @@ public struct LocationsView: View {
             let results = try await store.service.search(name: query, count: 10)
             searchResults = results
         } catch {
-            searchError = "Search failed: \(error)"
+            searchError = String(localized: "Search failed: \(String(describing: error))",
+                                 bundle: .module,
+                                 comment: "error message shown under the search bar when the geocoder request fails; %@ is the underlying error description")
             searchResults = []
         }
         isSearching = false
@@ -226,21 +249,21 @@ struct LocationRow: View {
                 AssetIcon("location_on", size: 24)
             }
             VStack(alignment: .leading, spacing: 2) {
-                Text(location.name)
+                Text(verbatim: location.name)
                     .font(.body.weight(.semibold))
-                Text(location.displaySubtitle)
+                Text(verbatim: location.displaySubtitle)
                     .font(.caption)
                     .opacity(0.85)
             }
             Spacer()
             if let report = report {
                 VStack(alignment: .trailing, spacing: 2) {
-                    Text(formatter.temperatureString(report.current.temperature))
+                    Text(verbatim: formatter.temperatureString(report.current.temperature))
                         .font(.title3.weight(.semibold))
                     if let today = report.daily.first {
                         HStack(spacing: 4) {
-                            Text("\u{2191}\(formatter.temperatureString(today.temperatureMax))")
-                            Text("\u{2193}\(formatter.temperatureString(today.temperatureMin))")
+                            Text(verbatim: "\u{2191}\(formatter.temperatureString(today.temperatureMax))")
+                            Text(verbatim: "\u{2193}\(formatter.temperatureString(today.temperatureMin))")
                         }
                         .font(.caption)
                         .opacity(0.85)

@@ -9,9 +9,13 @@ import FairSkiesModel
 public struct CurrentWeatherView: View {
     @Environment(WeatherStore.self) var store: WeatherStore
     public let location: SavedLocation
+    /// Padding to apply above the scroll content so the header clears the status bar
+    /// while the gradient background still extends behind it.
+    public let topSafeAreaInset: CGFloat
 
-    public init(location: SavedLocation) {
+    public init(location: SavedLocation, topSafeAreaInset: CGFloat = 0) {
         self.location = location
+        self.topSafeAreaInset = topSafeAreaInset
     }
 
     private var report: WeatherReport? {
@@ -44,7 +48,7 @@ public struct CurrentWeatherView: View {
                     }
                 }
                 .padding(.horizontal, 16)
-                .padding(.top, 20)
+                .padding(.top, topSafeAreaInset + 20)
                 .padding(.bottom, 50)
             }
             .refreshable {
@@ -62,10 +66,10 @@ public struct CurrentWeatherView: View {
     @ViewBuilder
     private var headerSection: some View {
         VStack(spacing: 6) {
-            Text(location.name)
+            Text(verbatim: location.name)
                 .font(.system(size: 34, weight: .semibold))
             if !location.displaySubtitle.isEmpty {
-                Text(location.displaySubtitle)
+                Text(verbatim: location.displaySubtitle)
                     .font(.subheadline)
                     .opacity(0.85)
             }
@@ -74,21 +78,23 @@ public struct CurrentWeatherView: View {
                             size: 132,
                             animated: store.settings.showAnimations)
                     .padding(.top, 8)
-                Text(store.formatter.temperatureString(report.current.temperature))
+                Text(verbatim: store.formatter.temperatureString(report.current.temperature))
                     .font(.system(size: 92, weight: .thin))
                     .padding(.top, -4)
                 Text(report.current.condition.label)
                     .font(.title3.weight(.medium))
                     .opacity(0.95)
                 HStack(spacing: 14) {
-                    Text(store.formatter.temperatureString(highToday(report)))
-                    Text("\u{2191}")
-                    Text(store.formatter.temperatureString(lowToday(report)))
-                    Text("\u{2193}")
+                    Text(verbatim: store.formatter.temperatureString(highToday(report)))
+                    Text(verbatim: "\u{2191}")
+                    Text(verbatim: store.formatter.temperatureString(lowToday(report)))
+                    Text(verbatim: "\u{2193}")
                 }
                 .font(.subheadline)
                 .opacity(0.9)
-                Text("Feels like \(store.formatter.temperatureString(report.current.apparentTemperature))")
+                Text("Feels like \(store.formatter.temperatureString(report.current.apparentTemperature))",
+                     bundle: .module,
+                     comment: "header subtitle showing apparent / feels-like temperature; %@ is the formatted temperature including its unit symbol")
                     .font(.subheadline)
                     .opacity(0.85)
             } else if loadState.isLoading {
@@ -111,14 +117,14 @@ public struct CurrentWeatherView: View {
                     HStack(spacing: 18) {
                         ForEach(upcoming) { entry in
                             VStack(spacing: 6) {
-                                Text(hourLabel(entry: entry, report: report))
+                                hourLabelText(entry: entry, report: report)
                                     .font(.caption)
                                     .opacity(0.85)
                                 WeatherGlyph(condition: entry.condition, size: 30, tint: .white)
-                                Text(store.formatter.temperatureString(entry.temperature))
+                                Text(verbatim: store.formatter.temperatureString(entry.temperature))
                                     .font(.headline)
                                 if entry.precipitationProbability >= 10 {
-                                    Text(store.formatter.humidityString(entry.precipitationProbability))
+                                    Text(verbatim: store.formatter.humidityString(entry.precipitationProbability))
                                         .font(.caption2)
                                         .opacity(0.85)
                                         .foregroundStyle(col("#A0E0FF"))
@@ -136,7 +142,7 @@ public struct CurrentWeatherView: View {
     @ViewBuilder
     private func dailySection(report: WeatherReport) -> some View {
         if !report.daily.isEmpty {
-            CardContainer(title: "\(report.daily.count)-Day Forecast", icon: "calendar_default") {
+            CardContainer(title: dailyForecastTitle(days: report.daily.count), icon: "calendar_default") {
                 VStack(spacing: 0) {
                     ForEach(Array(report.daily.enumerated()), id: \.offset) { pair in
                         DailyRow(day: pair.element,
@@ -191,11 +197,15 @@ public struct CurrentWeatherView: View {
     private var attributionSection: some View {
         VStack(spacing: 4) {
             if case .loaded(let date) = loadState {
-                Text("Updated \(formattedUpdate(date: date, report: report))")
+                Text("Updated \(formattedUpdate(date: date, report: report))",
+                     bundle: .module,
+                     comment: "footer line showing when weather was last fetched; %@ is a formatted clock time")
                     .font(.caption2)
                     .opacity(0.75)
             }
-            Text("Weather data by Open-Meteo.com")
+            Text("Weather data by Open-Meteo.com",
+                 bundle: .module,
+                 comment: "attribution footer naming the upstream data provider")
                 .font(.caption2)
                 .opacity(0.75)
         }
@@ -213,20 +223,28 @@ public struct CurrentWeatherView: View {
         case .failed(let message):
             VStack(spacing: 12) {
                 AssetIcon("compass_calibration", size: 36)
-                Text("Couldn't load weather")
+                Text("Couldn't load weather",
+                     bundle: .module,
+                     comment: "headline shown when the weather fetch failed")
                     .font(.headline)
-                Text(message)
+                Text(verbatim: message)
                     .font(.caption)
                     .multilineTextAlignment(.center)
                     .opacity(0.85)
                 Button {
                     Task { await store.refresh(location) }
                 } label: {
-                    Label("Retry", systemImage: "arrow.clockwise")
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 10)
-                        .background(Color.white.opacity(0.18))
-                        .clipShape(Capsule())
+                    Label {
+                        Text("Retry",
+                             bundle: .module,
+                             comment: "button title to retry a failed weather fetch")
+                    } icon: {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                    .background(Color.white.opacity(0.18))
+                    .clipShape(Capsule())
                 }
                 .buttonStyle(.plain)
             }
@@ -255,11 +273,21 @@ public struct CurrentWeatherView: View {
         return found
     }
 
-    private func hourLabel(entry: HourlyForecast, report: WeatherReport) -> String {
+    @ViewBuilder
+    private func hourLabelText(entry: HourlyForecast, report: WeatherReport) -> some View {
         if abs(entry.time.timeIntervalSince(Date())) < 1800 {
-            return "Now"
+            Text("Now",
+                 bundle: .module,
+                 comment: "hourly forecast label shown for the current hour, instead of a clock time")
+        } else {
+            Text(verbatim: store.formatter.hourString(entry.time, timezoneIdentifier: report.location.timezone))
         }
-        return store.formatter.hourString(entry.time, timezoneIdentifier: report.location.timezone)
+    }
+
+    private func dailyForecastTitle(days: Int) -> LocalizedStringKey {
+        // The %lld interpolation lets the localized format string use a different
+        // pluralization in languages that need one.
+        return "\(days)-Day Forecast"
     }
 
     private func highToday(_ report: WeatherReport) -> Double {
@@ -339,8 +367,8 @@ public struct CurrentWeatherView: View {
     }
 }
 
-struct Metric: Hashable {
-    var title: String
+struct Metric {
+    var title: LocalizedStringKey
     var value: String
     var icon: String
     var accent: Color
@@ -353,11 +381,12 @@ struct MetricCard: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
                 AssetIcon(metric.icon, size: 16, tint: metric.accent)
-                Text(metric.title.uppercased())
+                Text(metric.title, bundle: .module)
                     .font(.caption)
+                    .textCase(.uppercase)
                     .opacity(0.85)
             }
-            Text(metric.value)
+            Text(verbatim: metric.value)
                 .font(.title3.weight(.semibold))
                 .foregroundStyle(.white)
         }
@@ -369,11 +398,11 @@ struct MetricCard: View {
 }
 
 struct CardContainer<Content: View>: View {
-    let title: String
+    let title: LocalizedStringKey
     let icon: String?
     @ViewBuilder var content: () -> Content
 
-    init(title: String, icon: String? = nil, @ViewBuilder content: @escaping () -> Content) {
+    init(title: LocalizedStringKey, icon: String? = nil, @ViewBuilder content: @escaping () -> Content) {
         self.title = title
         self.icon = icon
         self.content = content
@@ -382,8 +411,9 @@ struct CardContainer<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 6) {
-                Text(title.uppercased())
+                Text(title, bundle: .module)
                     .font(.caption.weight(.semibold))
+                    .textCase(.uppercase)
                     .opacity(0.85)
                 Spacer()
             }
@@ -405,21 +435,29 @@ struct DailyRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Text(isFirst ? "Today" : formatter.weekdayString(day.date, timezoneIdentifier: timezone))
-                .font(.subheadline.weight(.medium))
-                .frame(width: 56, alignment: .leading)
+            Group {
+                if isFirst {
+                    Text("Today",
+                         bundle: .module,
+                         comment: "daily forecast row label used for the first day instead of a weekday name")
+                } else {
+                    Text(verbatim: formatter.weekdayString(day.date, timezoneIdentifier: timezone))
+                }
+            }
+            .font(.subheadline.weight(.medium))
+            .frame(width: 56, alignment: .leading)
             WeatherGlyph(condition: day.condition, size: 26, tint: .white)
                 .frame(width: 30)
             if day.precipitationProbabilityMax >= 10 {
-                Text(formatter.humidityString(day.precipitationProbabilityMax))
+                Text(verbatim: formatter.humidityString(day.precipitationProbabilityMax))
                     .font(.caption)
                     .foregroundStyle(col("#A0E0FF"))
                     .frame(width: 36, alignment: .leading)
             } else {
-                Text("")
+                Text(verbatim: "")
                     .frame(width: 36)
             }
-            Text(formatter.temperatureString(day.temperatureMin))
+            Text(verbatim: formatter.temperatureString(day.temperatureMin))
                 .font(.subheadline)
                 .opacity(0.85)
                 .frame(width: 38, alignment: .trailing)
@@ -428,7 +466,7 @@ struct DailyRow: View {
                                 rangeMin: minTemp,
                                 rangeMax: maxTemp)
                 .frame(height: 6)
-            Text(formatter.temperatureString(day.temperatureMax))
+            Text(verbatim: formatter.temperatureString(day.temperatureMax))
                 .font(.subheadline.weight(.semibold))
                 .frame(width: 38, alignment: .leading)
         }
