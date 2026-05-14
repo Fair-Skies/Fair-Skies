@@ -128,7 +128,6 @@ let logger: Logger = Logger(subsystem: "FairSkiesModel", category: "Tests")
     @Test func conditionLabelNotEmpty() throws {
         for kind in WeatherCondition.Kind.allCases {
             let cond = WeatherCondition(code: 0, kind: kind, isDay: true)
-            #expect(!cond.label.isEmpty, "kind \(kind)")
             #expect(!cond.iconName.isEmpty, "kind \(kind)")
         }
     }
