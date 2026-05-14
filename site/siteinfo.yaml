@@ -7,7 +7,8 @@
 title: 'Fair Skies'
 
 # Canonical site URL (used for sitemap, OpenGraph, and absolute links).
-host: 'https://fair-skies.app'
+#host: 'https://fair-skies.app'
+host: 'https://Fair-Skies.github.io/Fair-Skies'
 
 # Path to the appindex.json publication document, relative to this file.
 # generate it with: skip meta index -O site/appindex.json
